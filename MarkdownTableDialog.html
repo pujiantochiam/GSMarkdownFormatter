@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: sans-serif; margin: 20px; }
+      textarea { width: 95%; height: 250px; margin-bottom: 10px; }
+      button { padding: 8px 15px; margin-right: 10px;}
+    </style>
+  </head>
+  <body>
+    <textarea id="markdownInput"></textarea>
+    <button onclick="submitMarkdownTable()">OK</button>
+    <button onclick="google.script.host.close()">Cancel</button>
+
+    <script>
+      function submitMarkdownTable() {
+        const text = document.getElementById('markdownInput').value;
+        // Call the specific table processing function
+        google.script.run
+          .withSuccessHandler(closeDialog)
+          .withFailureHandler(showError)
+          .processPastedMarkdownTable(text); // <-- Calls the new function
+      }
+
+      function closeDialog() {
+        google.script.host.close();
+      }
+
+      function showError(error) {
+        alert('Error processing Markdown Table: ' + error.message);
+      }
+    </script>
+  </body>
+</html>

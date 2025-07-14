@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <!-- Use a templated stylesheet to keep CSS separate -->
+    <?!= HtmlService.createHtmlOutputFromFile('CSS').getContent(); ?>
+  </head>
+  <body>
+    <div class="container">
+      <form id="main-form">
+
+        <!-- SCOPE -->
+        <div class="form-group">
+          <label><strong>1. Search In:</strong></label>
+          <div class="radio-group">
+            <input type="radio" id="scope-selection" name="scope" value="selection" checked>
+            <label for="scope-selection">Current Selection</label>
+          </div>
+          <div class="radio-group">
+            <input type="radio" id="scope-sheet" name="scope" value="sheet">
+            <label for="scope-sheet">Entire Sheet</label>
+          </div>
+        </div>
+
+        <!-- SEARCH OPTIONS -->
+        <div class="form-group">
+          <label for="searchTerms"><strong>2. Words to Find:</strong></label>
+          <div class="radio-group">
+            <input type="radio" id="search-list" name="searchType" value="list" checked>
+            <label for="search-list">List (e.g., te, me, leur)</label>
+          </div>
+          <div class="radio-group">
+            <input type="radio" id="search-exact" name="searchType" value="exact">
+            <label for="search-exact">Exact Phrase (e.g., Hello World)</label>
+          </div>
+
+          <!-- ADD THIS NEW CHECKBOX -->
+          <div class="checkbox-group" style="margin-top: 10px;">
+            <input type="checkbox" id="exactMatch" checked>
+            <label for="exactMatch">Match whole words only</label>
+          </div>
+          <!-- END OF NEW PART -->
+
+          <textarea id="searchTerms" rows="3" placeholder="Enter comma-separated words or a phrase"></textarea>
+        </div>
+
+        <!-- REPLACE OPTIONS -->
+        <div class="form-group">
+          <label for="replaceText"><strong>3. Replace With (Optional):</strong></label>
+          <input type="text" id="replaceText" placeholder="Leave empty to only format">
+        </div>
+
+        <!-- FORMATTING OPTIONS -->
+        <div class="form-group">
+          <label><strong>4. Apply Formatting:</strong></label>
+          <div class="format-options">
+            <div class="checkbox-group">
+              <input type="checkbox" id="isBold">
+              <label for="isBold">Bold</label>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="isItalic">
+              <label for="isItalic">Italic</label>
+            </div>
+          </div>
+          <div class="format-options">
+             <div>
+              <label for="fontColor">Color:</label>
+              <input type="color" id="fontColor" value="#ff0000">
+            </div>
+            <div>
+              <label for="fontSize">Size:</label>
+              <input type="number" id="fontSize" placeholder="12" min="6" max="100">
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTON & STATUS -->
+        <div class="form-group">
+          <button type="submit" id="run-button" class="action">Apply Changes</button>
+          <div id="status" class="status-message"></div>
+        </div>
+        
+      </form>
+    </div>
+
+    <script>
+      document.getElementById('main-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        const runButton = document.getElementById('run-button');
+        const statusDiv = document.getElementById('status');
+        
+        // Collect all options from the form
+        const options = {
+          scope: document.querySelector('input[name="scope"]:checked').value,
+          searchType: document.querySelector('input[name="searchType"]:checked').value,
+          searchTerms: document.getElementById('searchTerms').value,
+          replaceText: document.getElementById('replaceText').value,
+          isBold: document.getElementById('isBold').checked,
+          isItalic: document.getElementById('isItalic').checked,
+          fontColor: document.getElementById('fontColor').value,
+          fontSize: document.getElementById('fontSize').value,
+          exactMatch: document.getElementById('exactMatch').checked // <-- ADD THIS LINE
+        };
+
+        // Disable button and show processing message
+        runButton.disabled = true;
+        runButton.textContent = 'Processing...';
+        statusDiv.textContent = '';
+        statusDiv.classList.remove('error');
+
+        // Call the server-side Apps Script function
+        google.script.run
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(onFailure)
+          .processFindAndFormat(options);
+      });
+
+      function onSuccess(message) {
+        const runButton = document.getElementById('run-button');
+        const statusDiv = document.getElementById('status');
+        
+        statusDiv.textContent = message;
+        runButton.disabled = false;
+        runButton.textContent = 'Apply Changes';
+        
+        // Optional: close the sidebar on success
+        // google.script.host.close();
+      }
+
+      function onFailure(error) {
+        const runButton = document.getElementById('run-button');
+        const statusDiv = document.getElementById('status');
+
+        statusDiv.textContent = error.message;
+        statusDiv.classList.add('error');
+        runButton.disabled = false;
+        runButton.textContent = 'Apply Changes';
+      }
+    </script>
+  </body>
+</html>

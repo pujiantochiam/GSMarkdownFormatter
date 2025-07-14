@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: sans-serif; margin: 20px; }
+      textarea { width: 95%; height: 250px; margin-bottom: 10px; }
+      button { padding: 8px 15px; margin-right: 10px;}
+    </style>
+  </head>
+  <body>
+    <textarea id="markdownInput"></textarea>
+    <button onclick="submitMarkdown()">OK</button>
+    <button onclick="google.script.host.close()">Cancel</button>
+
+    <script>
+      function submitMarkdown() {
+        const text = document.getElementById('markdownInput').value;
+        // Pass the text back to the server-side Apps Script function
+        google.script.run
+          .withSuccessHandler(closeDialog) // Close dialog on success
+          .withFailureHandler(showError)   // Show error on failure
+          .processPastedMarkdown(text);
+      }
+
+      function closeDialog() {
+        google.script.host.close();
+      }
+
+      function showError(error) {
+        alert('Error processing Markdown: ' + error.message);
+        // Optionally, keep the dialog open or provide more details
+      }
+    </script>
+  </body>
+</html>
